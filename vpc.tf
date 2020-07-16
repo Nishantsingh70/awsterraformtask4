@@ -63,37 +63,7 @@ resource "aws_route_table_association" "mypublicroutetable" {
   route_table_id = aws_route_table.mypublicroute.id
 }
 
-resource "aws_eip" "myeip" {
-   vpc = true
-   depends_on = [ aws_internet_gateway.myigw , 
-       ]
-}
 
-resource "aws_nat_gateway" "natgw" {
-  allocation_id = aws_eip.myeip.id
-  subnet_id = aws_subnet.mypublicsubnet.id
-  depends_on = [ aws_internet_gateway.myigw , ]
-  tags = {
-    Name = "natgw"
-  }
-}
-
-resource "aws_route_table" "myprivateroute" {
-  vpc_id = aws_vpc.myvpc.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.natgw.id
-  }
-
-  tags = {
-    Name = "myprivateroute"
-  }
-}
-resource "aws_route_table_association" "myprivateroutetable" {
-  subnet_id      = aws_subnet.myprivatesubnet.id
-  route_table_id = aws_route_table.myprivateroute.id
-}
 
 
 resource "aws_security_group" "mysg1" {
@@ -152,7 +122,7 @@ ingress {
   }
 }
 
-resource "aws_instance" "dbos" {
+resource "aws_instance" "mysqlos" {
    ami = "ami-0019ac6129392a0f2"
    instance_type = "t2.micro"
    key_name="mykey1332"
@@ -173,3 +143,35 @@ resource "aws_instance" "wpos" {
 }
 }
 
+
+resource "aws_eip" "myeip" {
+   vpc = true
+   depends_on = [ aws_internet_gateway.myigw , 
+       ]
+}
+
+resource "aws_nat_gateway" "natgw" {
+  allocation_id = aws_eip.myeip.id
+  subnet_id = aws_subnet.mypublicsubnet.id
+  depends_on = [ aws_internet_gateway.myigw , ]
+  tags = {
+    Name = "natgw"
+  }
+}
+
+resource "aws_route_table" "myprivateroute" {
+  vpc_id = aws_vpc.myvpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.natgw.id
+  }
+
+  tags = {
+    Name = "myprivateroute"
+  }
+}
+resource "aws_route_table_association" "myprivateroutetable" {
+  subnet_id      = aws_subnet.myprivatesubnet.id
+  route_table_id = aws_route_table.myprivateroute.id
+}
